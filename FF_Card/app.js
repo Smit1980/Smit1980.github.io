@@ -15,14 +15,11 @@
   if (pinForm) {
     const input = $('#pin');
     const pinSubmit = $('#pin-submit');
-    const adminSubmit = $('#admin-submit');
     const query = new URLSearchParams(window.location.search);
-    if (query.get('admin') === '1') $('#admin-disclosure').open = true;
     if (query.get('expired') === '1') setMessage($('#pin-message'), 'Срок действия этого доступа закончился. Запросите новый код.');
     input.addEventListener('input', () => { const digits = input.value.replace(/\D/g, '').slice(0, 12); input.value = digits.replace(/(.{4})(?=.)/g, '$1-'); });
-    session().then((current) => { pinSubmit.disabled = false; adminSubmit.disabled = false; if (current.authenticated) { const target = current.role === 'admin' ? '/admin' : '/guide/'; const link = $('#active-session-link'); link.href = target; link.textContent = current.role === 'admin' ? 'Открыть панель администратора' : 'Открыть инструкцию'; link.hidden = false; setMessage($('#pin-message'), 'Сессия уже активна.', 'ok'); } }).catch(() => { pinSubmit.disabled = false; adminSubmit.disabled = false; setMessage($('#pin-message'), 'Не удалось проверить сессию. Повторите попытку.'); });
+    session().then((current) => { pinSubmit.disabled = false; if (current.authenticated && current.role === 'reader') { const link = $('#active-session-link'); link.href = '/guide/'; link.textContent = 'Открыть инструкцию'; link.hidden = false; setMessage($('#pin-message'), 'Сессия уже активна.', 'ok'); } }).catch(() => { pinSubmit.disabled = false; setMessage($('#pin-message'), 'Не удалось проверить сессию. Повторите попытку.'); });
     pinForm.addEventListener('submit', async (event) => { event.preventDefault(); const pin = input.value.replace(/\D/g, ''); if (pin.length !== 12) return setMessage($('#pin-message'), 'Введите 12 цифр кода.'); pinSubmit.disabled = true; try { await api('/api/login', { method: 'POST', body: JSON.stringify({ pin }) }); go('/guide/'); } catch (error) { setMessage($('#pin-message'), error.message); pinSubmit.disabled = false; } });
-    $('#admin-form').addEventListener('submit', async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); if (!form.get('username') || !form.get('password')) return setMessage($('#admin-message'), 'Введите логин и пароль.'); adminSubmit.disabled = true; try { await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ username: form.get('username'), password: form.get('password') }) }); go('/admin'); } catch (error) { setMessage($('#admin-message'), error.message); adminSubmit.disabled = false; } });
   }
   const formatDate = (value) => value ? new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)) : '—';
   const remaining = (expiry, now) => { if (!expiry) return 'Ожидает активации'; const ms = new Date(expiry).getTime() - new Date(now).getTime(); if (ms <= 0) return 'Срок истёк'; const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000); return `Осталось ${h} ч ${m} мин`; };

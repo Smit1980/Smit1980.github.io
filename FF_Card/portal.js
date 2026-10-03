@@ -58,9 +58,8 @@
       let html, value=nonce(), protectedView=false;
       if(path.startsWith('/guide')) { const data=await json('/api/guide'); html=data.html; value=data.nonce; protectedView=true; }
       else {
-        let page='login.html';
-        if(path.startsWith('/admin')) { const current=await json('/api/session'); if(current.authenticated&&current.role==='admin') page='admin.html'; }
-        const result=await fetch(new URL(page,root),{cache:'no-store'});
+        if(path.startsWith('/admin')) throw new Error('Панель администратора недоступна.');
+        const result=await fetch(new URL('login.html',root),{cache:'no-store'});
         if(!result.ok) throw new Error('Не удалось загрузить страницу.');
         html=await result.text();
       }
