@@ -67,7 +67,7 @@
       if(turn!==generation) return;
       frame.srcdoc=documentHTML(html,value,true,protectedView);
       frame.hidden=false; notice.hidden=true;
-      document.title=protectedView?'Freedom Bank · инструкция':'Freedom Bank · материалы по доступу';
+      document.title=protectedView?'Карта банка Казахстана · инструкция':'Карта банка Казахстана · доступ';
     } catch(error) {
       if(turn!==generation) return;
       if(path!=='/') { accessToken=''; await navigate('/'); return; }
